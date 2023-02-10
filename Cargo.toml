@@ -12,3 +12,4 @@ hostname = "0.3.1"
 if-addrs = "0.8.0"
 log = "0.4.17"
 serde = { version = "1.0.152", features = ["derive"] }
+ureq = "2.6.2"
