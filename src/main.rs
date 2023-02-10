@@ -45,7 +45,7 @@ fn main() -> Result<()> {
 
     init_logging(config.log_level)?;
 
-    let dns_provider = DomeneShop::new(config.credentials.token, config.credentials.secret);
+    let dns_provider = DomeneShop::new(config.credentials.token, config.credentials.secret)?;
 
     for iface in if_addrs::get_if_addrs().unwrap() {
         if let IpAddr::V4(ipv4) = iface.addr.ip() {
