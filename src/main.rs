@@ -1,10 +1,10 @@
 #[macro_use]
 extern crate log;
 
-use std::net::{IpAddr, Ipv4Addr};
+use std::net::IpAddr;
 use std::str::FromStr;
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use cidr::Ipv4Cidr;
 use figment::Figment;
 use figment::providers::{Env, Serialized};
@@ -45,7 +45,7 @@ fn main() -> Result<()> {
 
     init_logging(config.log_level)?;
 
-    let dns_provider = DomeneShop::new(config.credentials.token, config.credentials.secret)?;
+    let mut dns_provider = DomeneShop::new(config.credentials.token, config.credentials.secret)?;
 
     for iface in if_addrs::get_if_addrs().unwrap() {
         if let IpAddr::V4(ipv4) = iface.addr.ip() {
