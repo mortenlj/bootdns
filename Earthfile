@@ -1,11 +1,11 @@
 VERSION 0.6
 
-FROM rust:1.66
+FROM rust:1.67
 
 WORKDIR /code
 
 # Constants, do not override
-ARG cross_version=0.2.4  # https://github.com/cross-rs/cross/releases
+ARG cross_version=0.2.5  # https://github.com/cross-rs/cross/releases
 
 ds-qoriq-sdk:
     FROM alpine:3
