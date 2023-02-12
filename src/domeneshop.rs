@@ -2,18 +2,16 @@ use std::collections::HashMap;
 use std::net::Ipv4Addr;
 use std::time::Duration;
 
-use anyhow::{anyhow, Result, Context};
-use base64::{Engine as _, engine::general_purpose};
+use anyhow::{anyhow, Context, Result};
+use reqwest::blocking::{Client, RequestBuilder, Response};
+use reqwest::Method;
 use serde::{Deserialize, Serialize};
-use ureq::{Agent, AgentBuilder, Request, Response};
 use url::Url;
 
 use crate::dns_provider::Dns;
 
 const USER_AGENT: &'static str = "bootdns-domeneshop/0.1";
-const IO_TIMEOUT: u64 = 10;
-const REQ_TIMEOUT: u64 = 30;
-
+const REQ_TIMEOUT: Duration = Duration::from_secs(30);
 const API_ROOT: &'static str = "https://api.domeneshop.no/v0/";
 
 
@@ -21,13 +19,6 @@ const API_ROOT: &'static str = "https://api.domeneshop.no/v0/";
 struct Credentials {
     token: String,
     secret: String,
-}
-
-impl Credentials {
-    pub(crate) fn as_header(&self) -> String {
-        let auth = format!("{}:{}", self.token, self.secret);
-        general_purpose::STANDARD.encode(auth)
-    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -53,7 +44,7 @@ struct DnsRecord {
 pub struct DomeneShop {
     credentials: Credentials,
 
-    agent: Agent,
+    client: Client,
     api_root: Url,
     domain2id: HashMap<String, i32>,
     id2domain: HashMap<i32, String>,
@@ -67,29 +58,27 @@ impl DomeneShop {
                 token,
                 secret,
             },
-            agent: AgentBuilder::new()
+            client: Client::builder()
                 .https_only(true)
-                .timeout_read(Duration::from_secs(IO_TIMEOUT))
-                .timeout_write(Duration::from_secs(IO_TIMEOUT))
-                .timeout(Duration::from_secs(REQ_TIMEOUT))
+                .timeout(Some(REQ_TIMEOUT))
                 .user_agent(USER_AGENT)
-                .build(),
+                .build()?,
             api_root,
             domain2id: HashMap::new(),
             id2domain: HashMap::new(),
         })
     }
 
-    fn make_request(&self, method: &str, url: &Url) -> Request {
-        self.agent.request_url(method, url)
-            .set("Authorization", format!("Basic {}", self.credentials.as_header()).as_str())
+    fn make_request(&self, method: Method, url: Url) -> RequestBuilder {
+        self.client.request(method, url)
+            .basic_auth(&self.credentials.token, Some(&self.credentials.secret))
     }
 
     fn get_domain_id(&mut self, domain: &String) -> Result<i32> {
         if self.domain2id.is_empty() {
             let url = self.api_root.join("domains")?;
-            let resp = self.make_request("GET", &url).call()?;
-            let data: Vec<Domain> = resp.into_json()?;
+            let resp = self.make_request(Method::GET, url).send()?;
+            let data: Vec<Domain> = resp.json()?;
             for domain_obj in data {
                 self.domain2id.insert(domain_obj.domain.clone(), domain_obj.id);
                 self.id2domain.insert(domain_obj.id, domain_obj.domain.clone());
@@ -112,8 +101,8 @@ impl DomeneShop {
     fn get_dns_records(&self, fqdn: &String, domain_id: i32) -> Result<Vec<DnsRecord>> {
         let host = self.make_host(fqdn, &domain_id)?;
         let url = self.api_root.join(format!("domains/{}/dns", domain_id).as_str())?;
-        let resp = self.make_request("GET", &url).query("host", host).call()?;
-        resp.into_json().map_err(|e| anyhow!(e))
+        let resp = self.make_request(Method::GET, url).query(&[("host", host)]).send()?;
+        resp.json().map_err(|e| anyhow!(e))
     }
 
     fn add_dns_record(&self, fqdn: &String, ipv4: &Ipv4Addr, domain_id: i32) -> Result<Response> {
@@ -125,8 +114,9 @@ impl DomeneShop {
             record_type: "A".to_string(),
             data: ipv4.to_string(),
         };
-        self.make_request("POST", &url)
-            .send_json(&dns_record)
+        self.make_request(Method::POST, url)
+            .json(&dns_record)
+            .send()
             .map_err(|e| anyhow!(e))
             .and_then(|resp| {
                 info!("Created DNS record {:?}", dns_record);
@@ -143,8 +133,9 @@ impl DomeneShop {
             record_type: "A".to_string(),
             data: ipv4.to_string(),
         };
-        self.make_request("PUT", &url)
-            .send_json(&dns_record)
+        self.make_request(Method::PUT, url)
+            .json(&dns_record)
+            .send()
             .map_err(|e| anyhow!(e))
             .and_then(|resp| {
                 info!("Updated DNS record {:?}", dns_record);
@@ -168,6 +159,8 @@ impl Dns for DomeneShop {
                     for record in records {
                         if record.data != ipv4.to_string() {
                             self.update_dns_record(&fqdn, ipv4, domain_id, record.id)?;
+                        } else {
+                            info!("{} is already up to date", &fqdn);
                         }
                     }
                 }
