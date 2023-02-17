@@ -146,8 +146,9 @@ impl DomeneShop {
 
 impl Dns for DomeneShop {
     fn register(&mut self, ipv4: &Ipv4Addr, domain: &String) -> Result<()> {
+        debug!("Attempting to register IP {:?} in domain {:?}", ipv4, domain);
         let hostname = hostname::get().map_err(|_| anyhow!("Unable to get hostname"))?
-            .into_string().map_err(|_| anyhow!("Unable convert hostname to regular string"))?;
+            .into_string().map_err(|_| anyhow!("Unable to convert hostname to regular string"))?;
         let fqdn = format!("{}.{}", hostname, domain);
         let domain_id = self.get_domain_id(domain)?;
         let dns_record = self.get_dns_records(&fqdn, domain_id);
@@ -166,7 +167,7 @@ impl Dns for DomeneShop {
                 }
             }
             Err(e) => {
-                info!("Get DNS record returned error: {:?}", e);
+                warn!("Get DNS record returned error: {:?}", e);
             }
         }
         Ok(())

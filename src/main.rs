@@ -44,11 +44,15 @@ fn main() -> Result<()> {
         .extract()?;
 
     init_logging(config.log_level)?;
+    debug!("Logging initialized ...");
 
     let mut dns_provider = DomeneShop::new(config.credentials.token, config.credentials.secret)?;
+    debug!("DNS provider ready ...");
 
     for iface in if_addrs::get_if_addrs().unwrap() {
+        debug!("Evaluating interface {:?}", iface);
         if let IpAddr::V4(ipv4) = iface.addr.ip() {
+            debug!("Checking IP {:?} against domain maps", ipv4);
             for dm in &config.domain_maps {
                 if dm.cidr.contains(&ipv4) {
                     dns_provider.register(&ipv4, &dm.domain)?;
