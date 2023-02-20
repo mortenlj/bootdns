@@ -40,7 +40,10 @@ build-powerpc-unknown-linux-gnuspe:
     COPY --dir src Cargo.lock Cargo.toml .
     RUN cargo +nightly build -Z build-std --target ${target} --release
 
-    SAVE ARTIFACT target/${target}/release/bootdns AS LOCAL target/bootdns.${version}.${target}
+    FOR executable IN bootdns ip_test web_test
+        SAVE ARTIFACT --if-exists target/${target}/release/${executable} AS LOCAL target/${executable}.${version}.${target}
+    END
+
     SAVE IMAGE --cache-hint
 
 prepare:
@@ -57,8 +60,11 @@ build-tier1:
         --pull ghcr.io/cross-rs/${target}:${cross_version}
         RUN cross build --target ${target} --release
     END
-    SAVE ARTIFACT --if-exists target/${target}/release/bootdns.exe AS LOCAL target/bootdns.${version}.${target}.exe
-    SAVE ARTIFACT --if-exists target/${target}/release/bootdns AS LOCAL target/bootdns.${version}.${target}
+
+    FOR executable IN bootdns ip_test web_test
+        SAVE ARTIFACT --if-exists target/${target}/release/${executable} AS LOCAL target/${executable}.${version}.${target}
+    END
+
     SAVE IMAGE --cache-hint
 
 build:
@@ -66,4 +72,4 @@ build:
         BUILD +build-tier1 --target=${target}
     END
     # Disable powerpcspe version until a way around building openssl is found
-    #BUILD +build-powerpc-unknown-linux-gnuspe
+    BUILD +build-powerpc-unknown-linux-gnuspe

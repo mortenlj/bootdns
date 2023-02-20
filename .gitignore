@@ -40,3 +40,6 @@ build
 dist
 pytest_runner*.egg
 __pycache__
+
+# Misc
+openssl-src-rs
