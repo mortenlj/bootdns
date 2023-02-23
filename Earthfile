@@ -17,6 +17,7 @@ ds-qoriq-sdk:
 
 prepare-powerpc-unknown-linux-gnuspe:
     COPY --dir +ds-qoriq-sdk/ /ds-qoriq-sdk/
+    RUN cargo install cargo-chef
 
     ENV PKG_CONFIG_SYSROOT_DIR=/ds-qoriq-sdk/usr/local/powerpc-e500v2-linux-gnuspe/powerpc-e500v2-linux-gnuspe/sysroot/
     ENV TOOLKIT_BIN=/ds-qoriq-sdk/powerpc-e500v2-linux-gnuspe/bin
@@ -44,9 +45,20 @@ prepare-tier1:
 
     RUN rustup toolchain add nightly
     RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+    RUN cargo install cargo-chef
 
     SAVE IMAGE --cache-hint
 
+chef-planner:
+    ARG target
+    IF [ "${target}" = "powerpc-unknown-linux-gnuspe" ]
+        FROM +prepare-powerpc-unknown-linux-gnuspe
+    ELSE
+        FROM +prepare-tier1
+    END
+    COPY --dir src Cargo.lock Cargo.toml .
+    RUN cargo chef prepare --recipe-path recipe.json
+    SAVE ARTIFACT recipe.json
 
 build-target:
     ARG target
@@ -55,6 +67,9 @@ build-target:
     ELSE
         FROM +prepare-tier1
     END
+
+    COPY (+chef-planner/recipe.json --target=${target}) recipe.json
+    RUN cargo +nightly chef cook --recipe-path recipe.json -Z build-std --target ${target} --release
 
     COPY --dir src Cargo.lock Cargo.toml .
     RUN cargo +nightly build -Z build-std --target ${target} --release
