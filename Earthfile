@@ -48,12 +48,8 @@ prepare-tier1:
     SAVE IMAGE --cache-hint
 
 chef-planner:
-    ARG target
-    IF [ "${target}" = "powerpc-unknown-linux-gnuspe" ]
-        FROM +prepare-powerpc-unknown-linux-gnuspe
-    ELSE
-        FROM +prepare-tier1
-    END
+    FROM +common-build
+
     COPY --dir src Cargo.lock Cargo.toml .
     RUN cargo chef prepare --recipe-path recipe.json
     SAVE ARTIFACT recipe.json
@@ -66,7 +62,7 @@ build-target:
         FROM +prepare-tier1
     END
 
-    COPY (+chef-planner/recipe.json --target=${target}) recipe.json
+    COPY +chef-planner/recipe.json recipe.json
     RUN cargo +nightly chef cook --recipe-path recipe.json -Z build-std --target ${target} --release
 
     COPY --dir src Cargo.lock Cargo.toml .
