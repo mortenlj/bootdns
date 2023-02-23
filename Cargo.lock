@@ -394,8 +394,7 @@ dependencies = [
 [[package]]
 name = "if-addrs"
 version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26b24dd0826eee92c56edcda7ff190f2cf52115c49eadb2c2da8063e2673a8c2"
+source = "git+https://github.com/mortenlj/if-addrs?branch=big-endian-support#e7c0d339ea57c5289c5cbb19262a588aef65ae40"
 dependencies = [
  "libc",
  "windows-sys 0.42.0",
@@ -595,7 +594,7 @@ checksum = "ff011a302c396a5197692431fc1948019154afc178baf7d8e37367442a4601cf"
 [[package]]
 name = "openssl-src"
 version = "111.25.0+1.1.1t"
-source = "git+https://github.com/mortenlj/openssl-src-rs?branch=powerpc-unknown-linux-gnuspe#00db4882aeca6d51220b4dd8bc0cd18b006e3a96"
+source = "git+https://github.com/alexcrichton/openssl-src-rs?branch=release/111#48792995d93a26dbda49bb87d6e1728cae095c90"
 dependencies = [
  "cc",
 ]

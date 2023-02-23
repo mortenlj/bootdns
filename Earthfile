@@ -71,5 +71,4 @@ build:
     FOR target IN x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
         BUILD +build-tier1 --target=${target}
     END
-    # Disable powerpcspe version until a way around building openssl is found
     BUILD +build-powerpc-unknown-linux-gnuspe
