@@ -40,7 +40,9 @@ build-powerpc-unknown-linux-gnuspe:
     COPY --dir src Cargo.lock Cargo.toml .
     RUN cargo +nightly build -Z build-std --target ${target} --release
 
-    SAVE ARTIFACT --if-exists target/${target}/release/bootdns AS LOCAL target/bootdns.${version}.${target}
+    FOR executable IN bootdns ip_test web_test
+        SAVE ARTIFACT --if-exists target/${target}/release/${executable} AS LOCAL target/${executable}.${version}.${target}
+    END
 
     SAVE IMAGE --cache-hint
 
@@ -59,7 +61,9 @@ build-tier1:
         RUN cross build --target ${target} --release
     END
 
-    SAVE ARTIFACT --if-exists target/${target}/release/bootdns AS LOCAL target/bootdns.${version}.${target}
+    FOR executable IN bootdns ip_test web_test
+        SAVE ARTIFACT --if-exists target/${target}/release/${executable} AS LOCAL target/${executable}.${version}.${target}
+    END
 
     SAVE IMAGE --cache-hint
 
