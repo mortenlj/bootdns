@@ -15,10 +15,7 @@ ds-qoriq-sdk:
     SAVE ARTIFACT /tmp/ds-qoriq-sdk/usr/local/powerpc-e500v2-linux-gnuspe
     SAVE IMAGE --cache-hint
 
-build-powerpc-unknown-linux-gnuspe:
-    ARG target=powerpc-unknown-linux-gnuspe
-    ARG version=unknown
-
+prepare-powerpc-unknown-linux-gnuspe:
     COPY --dir +ds-qoriq-sdk/ /ds-qoriq-sdk/
 
     ENV PKG_CONFIG_SYSROOT_DIR=/ds-qoriq-sdk/usr/local/powerpc-e500v2-linux-gnuspe/powerpc-e500v2-linux-gnuspe/sysroot/
@@ -37,30 +34,37 @@ build-powerpc-unknown-linux-gnuspe:
     RUN rustup toolchain add nightly
     RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 
+    SAVE IMAGE --cache-hint
+
+build-powerpc-unknown-linux-gnuspe:
+    FROM +prepare-powerpc-unknown-linux-gnuspe
+    ARG target=powerpc-unknown-linux-gnuspe
+
     COPY --dir src Cargo.lock Cargo.toml .
     RUN cargo +nightly build -Z build-std --target ${target} --release
 
+    ARG version=unknown
     FOR executable IN bootdns ip_test web_test
         SAVE ARTIFACT --if-exists target/${target}/release/${executable} AS LOCAL target/${executable}.${version}.${target}
     END
 
     SAVE IMAGE --cache-hint
 
-prepare:
+prepare-tier1:
     RUN cargo install cross --version ${cross_version}
     COPY --dir src Cargo.lock Cargo.toml .
     SAVE IMAGE --cache-hint
 
 build-tier1:
-    FROM +prepare
+    FROM +prepare-tier1
     ARG target
-    ARG version=unknown
 
     WITH DOCKER \
         --pull ghcr.io/cross-rs/${target}:${cross_version}
         RUN cross build --target ${target} --release
     END
 
+    ARG version=unknown
     FOR executable IN bootdns ip_test web_test
         SAVE ARTIFACT --if-exists target/${target}/release/${executable} AS LOCAL target/${executable}.${version}.${target}
     END
@@ -68,7 +72,7 @@ build-tier1:
     SAVE IMAGE --cache-hint
 
 build:
+    BUILD +build-powerpc-unknown-linux-gnuspe
     FOR target IN x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu
         BUILD +build-tier1 --target=${target}
     END
-    BUILD +build-powerpc-unknown-linux-gnuspe
