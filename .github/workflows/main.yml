@@ -67,8 +67,8 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ steps.set-version.outputs.version }}
-          release_name: Release ${{ steps.set-version.outputs.version }}
+          tag_name: "${{ needs.set-version.outputs.version }}"
+          release_name: Release "${{ needs.set-version.outputs.version }}"
           draft: false
           prerelease: false
 
@@ -83,4 +83,4 @@ jobs:
         with:
           files: './executables/*'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: ${{ steps.set-version.outputs.version }}
+          release-tag: "${{ needs.set-version.outputs.version }}"
