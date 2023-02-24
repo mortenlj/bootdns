@@ -9,7 +9,7 @@ cidr = { version = "0.2.1", features = ["serde"] }
 env_logger = "0.10.0"
 figment = { version = "0.10.8", features = ["env"] }
 hostname = "0.3.1"
-if-addrs = "0.8.0"
+if-addrs = "0.9.0"
 log = "0.4.17"
 openssl-sys = { version = "0.9.80", features = ["vendored"] }
 reqwest = { version = "0.11.14", features = ["blocking", "json"] }
@@ -18,4 +18,3 @@ url = "2.3.1"
 
 [patch.crates-io]
 openssl-src = { git = "https://github.com/alexcrichton/openssl-src-rs", branch = "release/111" }
-if-addrs = { git = "https://github.com/mortenlj/if-addrs", branch = "big-endian-support" }
