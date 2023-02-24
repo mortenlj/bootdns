@@ -8,7 +8,6 @@ WORKDIR /code
 ARG cross_version=0.2.5  # https://github.com/cross-rs/cross/releases
 
 ds-qoriq-sdk:
-    FROM alpine:3
     WORKDIR /tmp/ds-qoriq-sdk
     RUN wget --no-verbose https://global.download.synology.com/download/ToolChain/toolkit/6.2/qoriq/ds.qoriq-6.2.env.txz
     RUN tar xf ds.qoriq-6.2.env.txz
