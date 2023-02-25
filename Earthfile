@@ -74,6 +74,8 @@ build-target:
     SAVE IMAGE --push ${cache_image}:build-${target}
 
 build:
+    BUILD +ds-qoriq-sdk
+    BUILD +common-build
     FOR target IN x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu powerpc-unknown-linux-gnuspe
         BUILD +build-target --target=${target}
     END
