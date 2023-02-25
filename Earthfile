@@ -1,18 +1,18 @@
-VERSION 0.6
+VERSION 0.7
 
 FROM rust:1-bullseye
 
 WORKDIR /code
-
-# Constants, do not override
-ARG cross_version=0.2.5  # https://github.com/cross-rs/cross/releases
 
 ds-qoriq-sdk:
     WORKDIR /tmp/ds-qoriq-sdk
     RUN wget --no-verbose https://global.download.synology.com/download/ToolChain/toolkit/6.2/qoriq/ds.qoriq-6.2.env.txz
     RUN tar xf ds.qoriq-6.2.env.txz
     SAVE ARTIFACT /tmp/ds-qoriq-sdk/usr/local/powerpc-e500v2-linux-gnuspe
-    SAVE IMAGE --cache-hint
+
+    ARG EARTHLY_GIT_PROJECT_NAME
+    ARG cache_image=ghcr.io/$EARTHLY_GIT_PROJECT_NAME/cache
+    SAVE IMAGE --push ${cache_image}:ds-qoriq-sdk
 
 common-build:
     RUN cargo install cargo-chef
@@ -20,8 +20,9 @@ common-build:
     RUN rustup toolchain add nightly
     RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 
-    SAVE IMAGE --cache-hint
-
+    ARG EARTHLY_GIT_PROJECT_NAME
+    ARG cache_image=ghcr.io/$EARTHLY_GIT_PROJECT_NAME/cache
+    SAVE IMAGE --push ${cache_image}:common-build
 
 prepare-powerpc-unknown-linux-gnuspe:
     FROM +common-build
@@ -36,15 +37,11 @@ prepare-powerpc-unknown-linux-gnuspe:
     ENV CC_powerpc_unknown_linux_gnuspe=${TOOLKIT_BIN}/powerpc-e500v2-linux-gnuspe-gcc
     ENV RUSTFLAGS="-Ctarget-cpu=e500"
 
-    SAVE IMAGE --cache-hint
-
 prepare-tier1:
     FROM +common-build
 
     ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/aarch64-linux-gnu-gcc
     ENV CC_aarch64_unknown_linux_gnu=/usr/bin/aarch64-linux-gnu-gcc
-
-    SAVE IMAGE --cache-hint
 
 chef-planner:
     FROM +common-build
@@ -72,7 +69,9 @@ build-target:
         SAVE ARTIFACT --if-exists target/${target}/release/${executable} AS LOCAL target/${executable}.${version}.${target}
     END
 
-    SAVE IMAGE --cache-hint
+    ARG EARTHLY_GIT_PROJECT_NAME
+    ARG cache_image=ghcr.io/$EARTHLY_GIT_PROJECT_NAME/cache
+    SAVE IMAGE --push ${cache_image}:build-${target}
 
 build:
     FOR target IN x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu powerpc-unknown-linux-gnuspe

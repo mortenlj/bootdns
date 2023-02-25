@@ -11,7 +11,6 @@ env:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   set-version:
@@ -29,6 +28,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     needs: set-version
     env:
       version: "${{ needs.set-version.outputs.version }}"
@@ -47,7 +48,7 @@ jobs:
         env:
           EARTHLY_PUSH: "${{ github.ref == 'refs/heads/main' }}"
         run: |
-          earthly --verbose --allow-privileged --ci --output "--remote-cache=${cache_image}" +build "--version=${version}"
+          earthly --verbose --ci --output +build "--version=${version}"
       - name: Save executables for release
         uses: actions/upload-artifact@v3
         with:
@@ -70,7 +71,7 @@ jobs:
         uses: actions/create-release@v1
         with:
           tag_name: "${{ needs.set-version.outputs.version }}"
-          release_name: Release "${{ needs.set-version.outputs.version }}"
+          release_name: "Release ${{ needs.set-version.outputs.version }}"
           draft: false
           prerelease: false
 
