@@ -9,13 +9,12 @@ on: [ push ]
 env:
   cache_image: ghcr.io/${{ github.repository }}/cache:cache
 
-permissions:
-  contents: read
-
 jobs:
   set-version:
     name: Set variables
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v3
       - name: "Set version"
@@ -29,6 +28,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       packages: write
     needs: set-version
     env:
