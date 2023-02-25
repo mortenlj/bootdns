@@ -1,8 +1,11 @@
 use std::collections::HashMap;
+use std::{env, fs};
 use std::net::Ipv4Addr;
+use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::{anyhow, Context, Result};
+use netrc_rs::{Machine, Netrc};
 use reqwest::blocking::{Client, RequestBuilder, Response};
 use reqwest::Method;
 use serde::{Deserialize, Serialize};
@@ -13,6 +16,7 @@ use crate::dns_provider::Dns;
 const USER_AGENT: &'static str = "bootdns-domeneshop/0.1";
 const REQ_TIMEOUT: Duration = Duration::from_secs(30);
 const API_ROOT: &'static str = "https://api.domeneshop.no/v0/";
+const MACHINE_NAME: &'static str = "api.domeneshop.no";
 
 
 #[derive(Debug)]
@@ -51,13 +55,10 @@ pub struct DomeneShop {
 }
 
 impl DomeneShop {
-    pub(crate) fn new(token: String, secret: String) -> Result<impl Dns> {
+    pub(crate) fn new() -> Result<impl Dns> {
         let api_root = API_ROOT.parse()?;
         Ok(Self {
-            credentials: Credentials {
-                token,
-                secret,
-            },
+            credentials: load_netrc()?,
             client: Client::builder()
                 .https_only(true)
                 .timeout(Some(REQ_TIMEOUT))
@@ -174,4 +175,43 @@ impl Dns for DomeneShop {
     }
 }
 
+fn load_netrc() -> Result<Credentials> {
+    let netrc_file = env::var("NETRC")
+        .map(|var| PathBuf::from(var))
+        .or_else(|_| {
+            match dirs::home_dir() {
+                Some(home) => Ok(home.join(".netrc")),
+                None => Err(anyhow!("Unable to locate home directory")),
+            }
+        }).context("Failed to locate .netrc")?;
+    let contents = fs::read_to_string(netrc_file)
+        .context("Failed to read contents of .netrc file")?;
+    let netrc = Netrc::parse(contents, false)
+        .map_err(|e| anyhow!(e))
+        .context("Failed to parse .netrc file")?;
+    let machine = find_machine(&netrc)?;
+    let token = match &machine.login {
+        Some(token) => Ok(token.clone()),
+        None => Err(anyhow!("Token not defined for {:?} in .netrc", MACHINE_NAME)),
+    }?;
+    let secret = match &machine.password {
+        Some(secret) => Ok(secret.clone()),
+        None => Err(anyhow!("Secret not defined for {:?} in .netrc", MACHINE_NAME)),
+    }?;
+    Ok(Credentials{
+        token,
+        secret,
+    })
+}
 
+fn find_machine(netrc: &Netrc) -> Result<&Machine> {
+    netrc.machines.iter()
+        .filter(|machine| {
+            match &machine.name {
+                Some(name) if name == MACHINE_NAME => true,
+                _ => false,
+            }
+        })
+        .last()
+        .ok_or(anyhow!("Unable to find credentials for {:?} in .netrc file", MACHINE_NAME))
+}

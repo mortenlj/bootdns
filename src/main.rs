@@ -25,16 +25,9 @@ struct DomainMap {
 }
 
 #[derive(Deserialize, Serialize)]
-struct Credentials {
-    token: String,
-    secret: String,
-}
-
-#[derive(Deserialize, Serialize)]
 struct Config {
     domain_maps: Vec<DomainMap>,
     log_level: String,
-    credentials: Credentials,
 }
 
 fn main() -> Result<()> {
@@ -46,7 +39,7 @@ fn main() -> Result<()> {
     init_logging(config.log_level)?;
     debug!("Logging initialized ...");
 
-    let mut dns_provider = DomeneShop::new(config.credentials.token, config.credentials.secret)?;
+    let mut dns_provider = DomeneShop::new()?;
     debug!("DNS provider ready ...");
 
     for iface in if_addrs::get_if_addrs().unwrap() {
