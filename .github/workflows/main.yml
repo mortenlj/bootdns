@@ -49,7 +49,9 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: set-version
+    needs:
+      - set-version
+      - build-common
     strategy:
       matrix:
         target:
