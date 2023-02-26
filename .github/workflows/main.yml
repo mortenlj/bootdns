@@ -75,7 +75,7 @@ jobs:
         env:
           EARTHLY_PUSH: "${{ github.ref == 'refs/heads/main' }}"
         run: |
-          earthly --verbose --ci --output +build "--target=${{ matrix.target }}" "--version=${version}"
+          earthly --verbose --ci --output +build-target "--target=${{ matrix.target }}" "--version=${version}"
       - name: Save executables for release
         uses: actions/upload-artifact@v3
         with:
