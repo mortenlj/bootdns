@@ -10,9 +10,7 @@ ds-qoriq-sdk:
     RUN tar xf ds.qoriq-6.2.env.txz
     SAVE ARTIFACT /tmp/ds-qoriq-sdk/usr/local/powerpc-e500v2-linux-gnuspe
 
-    ARG EARTHLY_GIT_PROJECT_NAME
-    ARG cache_image=ghcr.io/$EARTHLY_GIT_PROJECT_NAME/cache
-    SAVE IMAGE --push ${cache_image}:ds-qoriq-sdk
+    SAVE IMAGE --push ghcr.io/mortenlj/bootdns:ds-qoriq-sdk
 
 common-build:
     RUN cargo install cargo-chef
@@ -20,9 +18,7 @@ common-build:
     RUN rustup toolchain add nightly
     RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 
-    ARG EARTHLY_GIT_PROJECT_NAME
-    ARG cache_image=ghcr.io/$EARTHLY_GIT_PROJECT_NAME/cache
-    SAVE IMAGE --push ${cache_image}:common-build
+    SAVE IMAGE --push ghcr.io/mortenlj/bootdns:common-build
 
 prepare-powerpc-unknown-linux-gnuspe:
     FROM +common-build
@@ -69,13 +65,9 @@ build-target:
         SAVE ARTIFACT --if-exists target/${target}/release/${executable} AS LOCAL target/${executable}.${version}.${target}
     END
 
-    ARG EARTHLY_GIT_PROJECT_NAME
-    ARG cache_image=ghcr.io/$EARTHLY_GIT_PROJECT_NAME/cache
-    SAVE IMAGE --push ${cache_image}:build-${target}
+    SAVE IMAGE --push ghcr.io/mortenlj/bootdns:build-${target}
 
 build:
-    BUILD +ds-qoriq-sdk
-    BUILD +common-build
     FOR target IN x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu powerpc-unknown-linux-gnuspe
         BUILD +build-target --target=${target}
     END
