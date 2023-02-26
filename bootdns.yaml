@@ -1,0 +1,5 @@
+domain_maps:
+  - cidr: 192.168.68.0/24
+    domain: home.local.ibidem.no
+  - cidr: 10.255.255.0/24
+    domain: home.zt.ibidem.no

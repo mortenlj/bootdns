@@ -1,13 +1,15 @@
 #[macro_use]
 extern crate log;
 
+use std::env;
 use std::net::IpAddr;
+use std::path::PathBuf;
 use std::str::FromStr;
 
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use cidr::Ipv4Cidr;
 use figment::Figment;
-use figment::providers::{Env, Serialized};
+use figment::providers::{Env, Format, Serialized, Toml, Yaml};
 use if_addrs;
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
@@ -18,13 +20,13 @@ use crate::domeneshop::DomeneShop;
 mod domeneshop;
 mod dns_provider;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 struct DomainMap {
     cidr: Ipv4Cidr,
     domain: String,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 struct Config {
     domain_maps: Vec<DomainMap>,
     log_level: String,
@@ -33,11 +35,14 @@ struct Config {
 fn main() -> Result<()> {
     let config: Config = Figment::new()
         .merge(Serialized::default("log_level", "error"))
+        .merge(Toml::file(locate_file("toml")))
+        .merge(Yaml::file(locate_file("yaml")))
         .merge(Env::prefixed("BOOTDNS_").split("__"))
         .extract()?;
 
-    init_logging(config.log_level)?;
+    init_logging(&config.log_level)?;
     debug!("Logging initialized ...");
+    debug!("Configuration: {:#?}", &config);
 
     let mut dns_provider = DomeneShop::new()?;
     debug!("DNS provider ready ...");
@@ -58,12 +63,42 @@ fn main() -> Result<()> {
 }
 
 /// Configure logging
-fn init_logging(log_level: String) -> Result<()> {
-    let level_filter: LevelFilter = LevelFilter::from_str(&log_level)
+fn init_logging(log_level: &String) -> Result<()> {
+    let level_filter: LevelFilter = LevelFilter::from_str(log_level)
         .context("failed to create LevelFilter from log level string")?;
     env_logger::builder()
         .default_format()
         .filter_level(level_filter)
         .init();
     Ok(())
+}
+
+/// Locate config file
+fn locate_file(format: &str) -> PathBuf {
+    let mut locations: Vec<PathBuf> = Vec::new();
+
+    match env::var("BOOTDNS_CONFIG_FILE")
+        .map(|var| PathBuf::from(var).with_extension(format.clone()))
+        .map_err(|e| anyhow!(e)) {
+        Ok(filepath) => locations.push(filepath),
+        _ => {}
+    }
+
+    match dirs::config_dir() {
+        Some(config) => locations.push(config.join("bootdns").with_extension(format.clone())),
+        None => {}
+    };
+
+    match dirs::home_dir() {
+        Some(home) => locations.push(home.join("bootdns").with_extension(format.clone())),
+        None => {}
+    };
+
+    for filepath in locations {
+        if filepath.is_file() {
+            return filepath
+        }
+    }
+
+    PathBuf::from("bootdns").with_extension(format)
 }
