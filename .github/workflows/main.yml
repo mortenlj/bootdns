@@ -55,8 +55,7 @@ jobs:
           name: executables
           path: target/bootdns.*
           if-no-files-found: error
-
-  release:
+  release-candidate:
     if: ${{ github.ref == 'refs/heads/main' }}
     needs:
       - set-version
@@ -64,27 +63,25 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - name: create release
-        id: create_release
-        uses: actions/create-release@v1
+      - uses: lee-dohm/close-matching-issues@v2
         with:
-          tag_name: "${{ needs.set-version.outputs.version }}"
-          release_name: "Release ${{ needs.set-version.outputs.version }}"
-          draft: false
-          prerelease: false
+          query: 'label:release-candidate'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download artifact
-        uses: actions/download-artifact@v3
+      - uses: nashmaniac/create-issue-action@v1.1
+        name: Create Release candidate issue
         with:
-          name: executables
-          path: ./executables/
-
-      - name: Upload Release Assets
-        uses: AButler/upload-release-assets@v2.0
-        with:
-          files: './executables/*'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: "${{ needs.set-version.outputs.version }}"
+          title: Release candidate ${{ needs.set-version.outputs.version }}
+          token: ${{secrets.GITHUB_TOKEN}}
+          labels: release-candidate
+          body: |
+            A new release candidate has been created.
+            Comment on this issue with `/approve-release` to promote this candidate to a full release.
+            <details>
+            <summary>Release candidate data</summary>
+            ```
+            version: ${{ needs.set-version.outputs.version }}
+            run_id: ${{ github.run_id }}
+            ```
+            </details>
