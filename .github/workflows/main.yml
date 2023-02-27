@@ -96,7 +96,7 @@ jobs:
       - build
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      issues: write
     steps:
       - uses: lee-dohm/close-matching-issues@v2
         with:
