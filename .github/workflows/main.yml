@@ -103,11 +103,11 @@ jobs:
           query: 'label:release-candidate'
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: nashmaniac/create-issue-action@v1.1
+      - uses: dacbd/create-issue-action@v1.2.1
         name: Create Release candidate issue
         with:
-          title: Release candidate ${{ needs.set-version.outputs.version }}
           token: ${{secrets.GITHUB_TOKEN}}
+          title: Release candidate ${{ needs.set-version.outputs.version }}
           labels: release-candidate
           body: |
             A new release candidate has been created.
