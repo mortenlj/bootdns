@@ -34,7 +34,7 @@ struct Config {
 
 fn main() -> Result<()> {
     let config: Config = Figment::new()
-        .merge(Serialized::default("log_level", "error"))
+        .merge(Serialized::default("log_level", "info"))
         .merge(Toml::file(locate_file("toml")))
         .merge(Yaml::file(locate_file("yaml")))
         .merge(Env::prefixed("BOOTDNS_").split("__"))
