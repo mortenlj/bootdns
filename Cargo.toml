@@ -17,6 +17,3 @@ openssl-sys = { version = "0.9.88", features = ["vendored"] }
 reqwest = { version = "0.11.18", features = ["blocking", "json"] }
 serde = { version = "1.0.163", features = ["derive"] }
 url = "2.3.1"
-
-[patch.crates-io]
-openssl-src = { git = "https://github.com/alexcrichton/openssl-src-rs", branch = "release/111" }
