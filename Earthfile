@@ -13,11 +13,13 @@ ds-qoriq-sdk:
     SAVE IMAGE --push ghcr.io/mortenlj/bootdns/cache:ds-qoriq-sdk
 
 common-build:
-    RUN cargo install cargo-chef
-    RUN apt-get --yes update && apt-get --yes install cmake gcc-aarch64-linux-gnu
+    RUN apt-get --yes update && apt-get --yes install cmake musl-tools gcc-aarch64-linux-gnu
+    RUN rustup target add x86_64-unknown-linux-musl
     RUN rustup toolchain add nightly
     RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
-
+    RUN curl -LsSf https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+    RUN curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+    RUN cargo binstall --no-confirm --no-cleanup cargo-chef
     SAVE IMAGE --push ghcr.io/mortenlj/bootdns/cache:common-build
 
 prepare-powerpc-unknown-linux-gnuspe:
