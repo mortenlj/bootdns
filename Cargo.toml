@@ -14,6 +14,6 @@ if-addrs = "0.10.1"
 log = "0.4.20"
 netrc-rs = "0.1.2"
 openssl-sys = { version = "0.9.91", features = ["vendored"] }
-reqwest = { version = "0.11.18", features = ["blocking", "json"] }
+reqwest = { version = "0.11.19", features = ["blocking", "json"] }
 serde = { version = "1.0.185", features = ["derive"] }
 url = "2.4.0"
