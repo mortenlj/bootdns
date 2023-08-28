@@ -4,7 +4,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-on: [ push ]
+on:
+  - push
+  - workflow_dispatch
 
 env:
   EARTHLY_USE_INLINE_CACHE: true
