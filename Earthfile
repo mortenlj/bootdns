@@ -1,7 +1,7 @@
 VERSION 0.7
 
-IMPORT github.com/mortenlj/earthly-lib/rust/commands AS lib-commands  # TODO: Fix reference before pushing
-IMPORT github.com/mortenlj/earthly-lib/rust/targets AS lib-targets  # TODO: Fix reference before pushing
+IMPORT github.com/mortenlj/earthly-lib/rust/commands AS lib-commands
+IMPORT github.com/mortenlj/earthly-lib/rust/targets AS lib-targets
 
 FROM rust:1-bullseye
 
