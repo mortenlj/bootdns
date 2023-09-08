@@ -1,66 +1,28 @@
 VERSION 0.7
 
+IMPORT github.com/mortenlj/earthly-lib/rust/commands AS lib-commands  # TODO: Fix reference before pushing
+IMPORT github.com/mortenlj/earthly-lib/rust/targets AS lib-targets  # TODO: Fix reference before pushing
+
 FROM rust:1-bullseye
 
 WORKDIR /code
 
-ds-qoriq-sdk:
-    WORKDIR /tmp/ds-qoriq-sdk
-    RUN wget --no-verbose https://global.download.synology.com/download/ToolChain/toolkit/6.2/qoriq/ds.qoriq-6.2.env.txz
-    RUN tar xf ds.qoriq-6.2.env.txz
-    SAVE ARTIFACT /tmp/ds-qoriq-sdk/usr/local/powerpc-e500v2-linux-gnuspe
-
-    SAVE IMAGE --push ghcr.io/mortenlj/bootdns/cache:ds-qoriq-sdk
-
-common-build:
-    RUN apt-get --yes update && apt-get --yes install cmake musl-tools gcc-aarch64-linux-gnu
-    RUN rustup target add x86_64-unknown-linux-musl
-    RUN rustup toolchain add nightly
-    RUN rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
-    RUN curl -LsSf https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-    RUN curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-    RUN cargo binstall --no-confirm --no-cleanup cargo-chef
-    SAVE IMAGE --push ghcr.io/mortenlj/bootdns/cache:common-build
-
-prepare-powerpc-unknown-linux-gnuspe:
-    FROM +common-build
-    COPY --dir +ds-qoriq-sdk/ /ds-qoriq-sdk/
-
-    ENV PKG_CONFIG_SYSROOT_DIR=/ds-qoriq-sdk/usr/local/powerpc-e500v2-linux-gnuspe/powerpc-e500v2-linux-gnuspe/sysroot/
-    ENV TOOLKIT_BIN=/ds-qoriq-sdk/powerpc-e500v2-linux-gnuspe/bin
-    ENV CARGO_TARGET_POWERPC_UNKNOWN_LINUX_GNUSPE_LINKER=${TOOLKIT_BIN}/powerpc-e500v2-linux-gnuspe-gcc
-    ENV CMAKE_C_COMPILER=${TOOLKIT_BIN}/powerpc-e500v2-linux-gnuspe-gcc
-    ENV CMAKE_CXX_COMPILER=${TOOLKIT_BIN}/powerpc-e500v2-linux-gnuspe-g++
-    ENV CMAKE_ASM_COMPILER=${TOOLKIT_BIN}/powerpc-e500v2-linux-gnuspe-gcc
-    ENV CC_powerpc_unknown_linux_gnuspe=${TOOLKIT_BIN}/powerpc-e500v2-linux-gnuspe-gcc
-    ENV RUSTFLAGS="-Ctarget-cpu=e500"
-
-prepare-tier1:
-    FROM +common-build
-
-    ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=/usr/bin/aarch64-linux-gnu-gcc
-    ENV CC_aarch64_unknown_linux_gnu=/usr/bin/aarch64-linux-gnu-gcc
-
 chef-planner:
-    FROM +common-build
+    FROM lib-targets+common-build-setup
 
-    COPY --dir src Cargo.lock Cargo.toml .
-    RUN cargo chef prepare --recipe-path recipe.json
+    DO lib-commands+CHEF_PREPARE
     SAVE ARTIFACT recipe.json
 
 build-target:
     ARG target
     IF [ "${target}" = "powerpc-unknown-linux-gnuspe" ]
-        FROM +prepare-powerpc-unknown-linux-gnuspe
+        FROM lib-targets+prepare-powerpc-unknown-linux-gnuspe
     ELSE
-        FROM +prepare-tier1
+        FROM lib-targets+prepare-tier1
     END
 
     COPY +chef-planner/recipe.json recipe.json
-    RUN cargo +nightly chef cook --recipe-path recipe.json -Z build-std --target ${target} --release
-
-    COPY --dir src Cargo.lock Cargo.toml .
-    RUN cargo +nightly build -Z build-std --target ${target} --release
+    DO lib-commands+BUILD --target ${target}
 
     ARG version=unknown
     FOR executable IN bootdns ip_test web_test
