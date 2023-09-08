@@ -13,7 +13,7 @@ hostname = "0.3.1"
 if-addrs = "0.10.1"
 log = "0.4.20"
 netrc-rs = "0.1.2"
-openssl-sys = { version = "0.9.93", features = ["vendored"] }
+openssl-sys = { version = "0.9.92", features = ["vendored"] }
 reqwest = { version = "0.11.20", features = ["blocking", "json"] }
 serde = { version = "1.0.188", features = ["derive"] }
 url = "2.4.1"
