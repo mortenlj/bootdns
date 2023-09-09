@@ -30,28 +30,6 @@ jobs:
           echo "version=${version}" >> ${GITHUB_OUTPUT}
     outputs:
       version: "${{ steps.constants.outputs.version }}"
-  build-common:
-    name: Build common
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: earthly/actions-setup@v1
-        with:
-          version: "latest" # or pin to an specific version, e.g. "v0.6.10"
-      - uses: actions/checkout@v3
-      - name: Login to GitHub Packages Docker Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and possibly push
-        env:
-          EARTHLY_PUSH: "${{ github.ref == 'refs/heads/main' }}"
-        run: |
-          earthly +common-build
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -60,7 +38,6 @@ jobs:
       packages: write
     needs:
       - set-version
-      - build-common
     strategy:
       matrix:
         target:
