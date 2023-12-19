@@ -22,15 +22,6 @@ jobs:
         id: get_data
         uses: ./.github/actions/get_data
 
-      - name: create release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ steps.get_data.outputs.version }}
-          release_name: Release ${{ steps.get_data.outputs.version }}
-          draft: false
-          prerelease: false
-
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v3
         with:
@@ -40,12 +31,15 @@ jobs:
           name_is_regexp: true
           path: ./executables/
 
-      - name: Upload Release Assets
-        uses: AButler/upload-release-assets@v3.0
+      - name: create release
+        id: create_release
+        uses: softprops/action-gh-release@v0.1.15
         with:
-          files: './executables/*'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: ${{ steps.get_data.outputs.version }}
+          tag_name: ${{ steps.get_data.outputs.version }}
+          name: Release ${{ steps.get_data.outputs.version }}
+          draft: false
+          prerelease: false
+          files: ./executables/*/*
 
       - uses: lee-dohm/close-matching-issues@v2
         if: success()
