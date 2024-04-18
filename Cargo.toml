@@ -8,7 +8,7 @@ anyhow = "1.0.82"
 cidr = { version = "0.2.2", features = ["serde"] }
 dirs = "5.0.1"
 env_logger = "0.11.3"
-figment = { version = "0.10.17", features = ["env", "toml", "yaml"] }
+figment = { version = "0.10.18", features = ["env", "toml", "yaml"] }
 hostname = "0.4.0"
 if-addrs = "0.12.0"
 log = "0.4.21"
