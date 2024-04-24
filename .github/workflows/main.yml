@@ -27,6 +27,7 @@ jobs:
         id: constants
         run: |
           export version="$(date +%Y%m%d%H%M%S)-$(git describe --always --dirty --exclude '*')"
+          echo "version=${version}"
           echo "version=${version}" >> ${GITHUB_OUTPUT}
     outputs:
       version: "${{ steps.constants.outputs.version }}"
@@ -61,6 +62,11 @@ jobs:
       - name: Build and possibly push
         env:
           EARTHLY_PUSH: "${{ github.ref == 'refs/heads/main' }}"
+          EARTHLY_ORG: ${{ secrets.EARTHLY_ORG }}
+          EARTHLY_SATELLITE: ${{ secrets.EARTHLY_SATELLITE }}
+          EARTHLY_TOKEN: ${{ secrets.EARTHLY_TOKEN }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           earthly +build-target "--target=${{ matrix.target }}" "--version=${version}"
       - name: Save executables for release
