@@ -32,6 +32,6 @@ build-target:
     SAVE IMAGE --push ghcr.io/mortenlj/bootdns/cache:build-${target}
 
 build:
-    FOR target IN x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu powerpc-unknown-linux-gnuspe
+    FOR target IN x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu powerpc-unknown-linux-gnuspe armv7-unknown-linux-gnueabihf
         BUILD +build-target --target=${target}
     END
