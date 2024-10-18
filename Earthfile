@@ -1,4 +1,4 @@
-VERSION 0.7
+VERSION 0.8
 
 IMPORT github.com/mortenlj/earthly-lib/rust/commands AS lib-commands
 IMPORT github.com/mortenlj/earthly-lib/rust/targets AS lib-targets
@@ -14,14 +14,11 @@ chef-planner:
     SAVE ARTIFACT recipe.json
 
 build-target:
-    ARG target
-    IF [ "${target}" = "powerpc-unknown-linux-gnuspe" ]
-        FROM lib-targets+prepare-powerpc-unknown-linux-gnuspe
-    ELSE
-        FROM lib-targets+prepare-tier1
-    END
+    FROM lib-targets+prepare-tier1
 
     COPY +chef-planner/recipe.json recipe.json
+
+    ARG target
     DO lib-commands+BUILD --target ${target}
 
     ARG version=unknown
@@ -32,6 +29,6 @@ build-target:
     SAVE IMAGE --push ghcr.io/mortenlj/bootdns/cache:build-${target}
 
 build:
-    FOR target IN x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu powerpc-unknown-linux-gnuspe armv7-unknown-linux-gnueabihf
+    FOR target IN x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu armv7-unknown-linux-gnueabihf
         BUILD +build-target --target=${target}
     END
