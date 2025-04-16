@@ -3,7 +3,7 @@ VERSION 0.8
 IMPORT github.com/mortenlj/earthly-lib/rust/commands AS lib-commands
 IMPORT github.com/mortenlj/earthly-lib/rust/targets AS lib-targets
 
-FROM rust:1-bullseye
+FROM rust:1
 
 WORKDIR /code
 
