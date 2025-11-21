@@ -1,0 +1,82 @@
+[env]
+CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "/usr/bin/aarch64-linux-gnu-gcc"
+CC_aarch64_unknown_linux_gnu = "/usr/bin/aarch64-linux-gnu-gcc"
+CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER = "/usr/bin/arm-linux-gnueabihf-gcc"
+CC_armv7_unknown_linux_gnueabihf = "/usr/bin/arm-linux-gnueabihf-gcc"
+
+[tasks.setup-rust]
+hide = true
+description = "Install and configure rust and components"
+run = [
+    "rustup update",
+    "rustup target add armv7-unknown-linux-gnueabihf x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu",
+    "rustup component add clippy",
+    "cargo binstall --no-confirm --no-cleanup cargo-nextest",
+]
+sources = ["Cargo.toml", "Cargo.lock"]
+
+[tasks.test]
+depends = ["setup-rust"]
+run = "cargo nextest run --no-tests warn"
+
+[tasks.fmt]
+depends = ["setup-rust"]
+description = "Format source"
+run = "cargo fmt --all"
+
+[tasks.fmt-check]
+depends = ["setup-rust"]
+description = "Check formatting"
+run = "cargo fmt --all --check"
+
+[tasks.lint]
+depends = ["setup-rust"]
+description = "Lint the project"
+run = "cargo clippy"
+
+[tasks.lint-fix]
+depends = ["setup-rust"]
+description = "Run lint fixers"
+run = "cargo clippy --fix"
+
+[tasks.ci]
+description = "Run CI tasks"
+depends = ["fmt-check", "lint"]
+
+[tasks.build-target]
+depends = ["setup-rust"]
+hide = true
+usage = '''
+arg "[target]" help="Target triple" {
+  choices "armv7-unknown-linux-gnueabihf" "x86_64-unknown-linux-gnu" "aarch64-unknown-linux-gnu"
+}
+flag "--release" help="Build release mode"
+'''
+run = "cargo build ${usage_target:+--target} ${usage_target} ${usage_release:+--release}"
+
+[tasks.build]
+depends = [
+    "build-target --release armv7-unknown-linux-gnueabihf",
+    "build-target --release x86_64-unknown-linux-gnu",
+    "build-target --release aarch64-unknown-linux-gnu",
+]
+description = "Build the project"
+sources = ["src/**/*.rs", "Cargo.lock", "Cargo.toml"]
+outputs = [
+    "target/aarch64-unknown-linux-gnu/release/bootdns",
+    "target/armv7-unknown-linux-gnueabihf/release/bootdns",
+    "target/x86_64-unknown-linux-gnu/release/bootdns",
+]
+
+[tasks.publish]
+description = "Create a github release"
+run = "echo TODO!"
+
+[tasks.fast-build]
+depends = [
+    "setup-rust",
+    "build-target",
+]
+description = "Build the project in debug mode"
+sources = ["src/**/*.rs", "Cargo.lock", "Cargo.toml"]
+outputs = ["target/debug/bootdns"]
