@@ -8,17 +8,16 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, Context, Result};
 use cidr::Ipv4Cidr;
-use figment::Figment;
 use figment::providers::{Env, Format, Serialized, Toml, Yaml};
-use if_addrs;
+use figment::Figment;
 use log::LevelFilter;
 use serde::{Deserialize, Serialize};
 
 use crate::dns_provider::Dns;
 use crate::domeneshop::DomeneShop;
 
-mod domeneshop;
 mod dns_provider;
+mod domeneshop;
 
 #[derive(Deserialize, Serialize, Debug)]
 struct DomainMap {
@@ -44,10 +43,10 @@ fn main() -> Result<()> {
     debug!("Logging initialized ...");
     debug!("Configuration: {:#?}", &config);
 
-    let mut dns_provider = DomeneShop::new()?;
+    let mut dns_provider = DomeneShop::new();
     debug!("DNS provider ready ...");
 
-    for iface in if_addrs::get_if_addrs().unwrap() {
+    for iface in if_addrs::get_if_addrs()? {
         debug!("Evaluating interface {:?}", iface);
         if let IpAddr::V4(ipv4) = iface.addr.ip() {
             debug!("Checking IP {:?} against domain maps", ipv4);
@@ -63,7 +62,7 @@ fn main() -> Result<()> {
 }
 
 /// Configure logging
-fn init_logging(log_level: &String) -> Result<()> {
+fn init_logging(log_level: &str) -> Result<()> {
     let level_filter: LevelFilter = LevelFilter::from_str(log_level)
         .context("failed to create LevelFilter from log level string")?;
     env_logger::builder()
@@ -77,26 +76,24 @@ fn init_logging(log_level: &String) -> Result<()> {
 fn locate_file(format: &str) -> PathBuf {
     let mut locations: Vec<PathBuf> = Vec::new();
 
-    match env::var("BOOTDNS_CONFIG_FILE")
-        .map(|var| PathBuf::from(var).with_extension(format.clone()))
-        .map_err(|e| anyhow!(e)) {
-        Ok(filepath) => locations.push(filepath),
-        _ => {}
+    if let Ok(filepath) = env::var("BOOTDNS_CONFIG_FILE")
+        .map(|var| PathBuf::from(var).with_extension(format))
+        .map_err(|e| anyhow!(e))
+    {
+        locations.push(filepath)
     }
 
-    match dirs::config_dir() {
-        Some(config) => locations.push(config.join("bootdns").with_extension(format.clone())),
-        None => {}
+    if let Some(config) = dirs::config_dir() {
+        locations.push(config.join("bootdns").with_extension(format))
     };
 
-    match dirs::home_dir() {
-        Some(home) => locations.push(home.join("bootdns").with_extension(format.clone())),
-        None => {}
+    if let Some(home) = dirs::home_dir() {
+        locations.push(home.join("bootdns").with_extension(format))
     };
 
     for filepath in locations {
         if filepath.is_file() {
-            return filepath
+            return filepath;
         }
     }
 

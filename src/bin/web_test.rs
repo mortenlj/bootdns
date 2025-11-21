@@ -8,10 +8,9 @@ use log::LevelFilter;
 use reqwest::blocking::Client;
 use url::Url;
 
-const USER_AGENT: &'static str = "bootdns-domeneshop/0.1";
+const USER_AGENT: &str = "bootdns-domeneshop/0.1";
 const REQ_TIMEOUT: Duration = Duration::from_secs(30);
-const URL: &'static str = "https://httpbin.org/json";
-
+const URL: &str = "https://httpbin.org/json";
 
 fn main() -> Result<()> {
     env_logger::builder()
@@ -27,9 +26,7 @@ fn main() -> Result<()> {
 
     let url: Url = URL.parse()?;
 
-    let resp = client.get(url)
-        .send()
-        .map_err(|e| anyhow!(e))?;
+    let resp = client.get(url).send().map_err(|e| anyhow!(e))?;
     debug!("Response: {:?}", resp);
 
     Ok(())
