@@ -44,3 +44,4 @@ __pycache__
 # Misc
 openssl-src-rs
 bootdns.yaml
+.config/vendir/
