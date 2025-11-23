@@ -1,11 +1,5 @@
-[tools]
-vendir = "latest"
-
-[hooks]
-enter = "vendir sync"
-
 [task_config]
-includes = [".config/vendir/mise-lib"]
+includes = [".config/mise-lib"]
 
 [env]
 CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "/usr/bin/aarch64-linux-gnu-gcc"

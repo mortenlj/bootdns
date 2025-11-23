@@ -1,9 +1,0 @@
-apiVersion: vendir.k14s.io/v1alpha1
-directories:
-- contents:
-  - git:
-      commitTitle: Clean up experiment
-      sha: 0510a6bdd9150ec73ad33d217a8d404ac096d4ed
-    path: mise-lib
-  path: .config/vendir
-kind: LockConfig
