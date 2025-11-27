@@ -1,5 +1,8 @@
 [task_config]
-includes = [".config/mise-lib"]
+includes = [
+    ".config/mise-lib",
+    ".config/mise-lib/virtual_tasks.toml",
+]
 
 [env]
 CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "/usr/bin/aarch64-linux-gnu-gcc"
@@ -30,22 +33,18 @@ description = "Run CI tasks"
 depends = ["fmt-check", "lint"]
 
 [tasks.release-build]
-depends = [
-    "rust:build-target --release armv7-unknown-linux-gnueabihf",
-    "rust:build-target --release x86_64-unknown-linux-gnu",
-    "rust:build-target --release aarch64-unknown-linux-gnu",
-]
+depends = ["rust:release-build"]
 description = "Build the project"
 sources = ["src/**/*.rs", "Cargo.lock", "Cargo.toml"]
 outputs = [
-    "target/aarch64-unknown-linux-gnu/release/bootdns",
-    "target/armv7-unknown-linux-gnueabihf/release/bootdns",
-    "target/x86_64-unknown-linux-gnu/release/bootdns",
+    "target/release/bootdns.*.aarch64-unknown-linux-gnu",
+    "target/release/bootdns.*.armv7-unknown-linux-gnueabihf",
+    "target/release/bootdns.*.x86_64-unknown-linux-gnu",
 ]
 
 [tasks.build]
 depends = [
-    "rust:build-target",
+    "rust:build",
 ]
 description = "Build the project in debug mode"
 sources = ["src/**/*.rs", "Cargo.lock", "Cargo.toml"]
