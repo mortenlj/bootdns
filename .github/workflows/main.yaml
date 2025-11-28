@@ -62,13 +62,13 @@ jobs:
       - uses: moonrepo/setup-rust@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: mise run ${{ matrix.task }}
+      - run: mise run ${{ matrix.task.cmd }}
       - name: List contents of target/release
         run: ls -la target/release
       - name: Save artifacts for release
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
-          name: artifacts-${{ matrix.task }}
+          name: artifacts-${{ matrix.task.name }}
           path: |
             ${{ fromJSON(needs.setup.outputs.artifacts) }}
           if-no-files-found: warn  # TODO: Change to error of that would work after testing
