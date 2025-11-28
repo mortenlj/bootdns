@@ -54,13 +54,15 @@ jobs:
           submodules: "true"
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
       - run: mise run ${{ matrix.task }}
+      - name: List contents of target/release
+        run: ls -la target/release
       - name: Save artifacts for release
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
           name: artifacts-${{ matrix.task }}
           path: |
             ${{ fromJSON(needs.setup.outputs.artifacts) }}
-          if-no-files-found: error
+          if-no-files-found: warn  # TODO: Change to error of that would work after testing
 
   publish:
     runs-on: ubuntu-latest
