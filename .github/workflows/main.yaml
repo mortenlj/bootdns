@@ -38,10 +38,8 @@ jobs:
         with:
           fetch-depth: 0
           submodules: "true"
-      - run: apt-get --yes update && apt-get --yes install cmake musl-tools gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-x86-64-linux-gnu
+      - run: sudo apt-get --yes update && apt-get --yes install cmake musl-tools gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-x86-64-linux-gnu
       - uses: moonrepo/setup-rust@v1
-        with:
-          targets: armv7-unknown-linux-gnueabihf,x86_64-unknown-linux-gnu,aarch64-unknown-linux-gnu
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
@@ -62,11 +60,9 @@ jobs:
         with:
           fetch-depth: 0
           submodules: "true"
-      - run: apt-get --yes update && apt-get --yes install cmake musl-tools gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-x86-64-linux-gnu
+      - run: sudo apt-get --yes update && apt-get --yes install cmake musl-tools gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-x86-64-linux-gnu
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
       - uses: moonrepo/setup-rust@v1
-        with:
-          targets: armv7-unknown-linux-gnueabihf,x86_64-unknown-linux-gnu,aarch64-unknown-linux-gnu
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: mise run ${{ matrix.task }}
