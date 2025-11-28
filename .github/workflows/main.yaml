@@ -62,6 +62,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: mise run ${{ matrix.task.cmd }}
+        env:
+          version: ${{ fromJSON(needs.setup.outputs.version) }}
       - name: List contents of target/release
         run: ls -la target/release
       - name: Save artifacts for release
