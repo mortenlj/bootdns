@@ -38,7 +38,6 @@ jobs:
         with:
           fetch-depth: 0
           submodules: "true"
-      - run: sudo apt-get --yes update && sudo apt-get --yes install cmake musl-tools gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf gcc-x86-64-linux-gnu
       - uses: moonrepo/setup-rust@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
