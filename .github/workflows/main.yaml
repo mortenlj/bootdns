@@ -34,6 +34,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: "true"
+      - uses: moonrepo/setup-rust@v1
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
       - run: mise run ${{ matrix.task }}
 
@@ -53,6 +54,7 @@ jobs:
           fetch-depth: 0
           submodules: "true"
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
+      - uses: moonrepo/setup-rust@v1
       - run: mise run ${{ matrix.task }}
       - name: List contents of target/release
         run: ls -la target/release
