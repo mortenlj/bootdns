@@ -49,8 +49,6 @@ jobs:
     needs:
       - setup
       - ci
-    env:
-      UV_DYNAMIC_VERSIONING_BYPASS: ${{ fromJSON(needs.setup.outputs.clean-version) }}
     strategy:
       matrix:
         task: ${{ fromJSON(needs.setup.outputs.release-build-tasks) }}
