@@ -38,11 +38,8 @@ jobs:
         with:
           fetch-depth: 0
           submodules: "true"
-      - uses: moonrepo/setup-rust@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
-      - run: mise run ${{ matrix.task.cmd }}
+      - run: mise run docker:run-task ${{ matrix.task.cmd }}
 
   build:
     runs-on: ubuntu-latest
@@ -58,14 +55,10 @@ jobs:
           fetch-depth: 0
           submodules: "true"
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
-      - uses: moonrepo/setup-rust@v1
+      - run: mise run docker:run-task release-build "${{ matrix.task.cmd }}"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: mise run ${{ matrix.task.cmd }}
-        env:
-          version: ${{ fromJSON(needs.setup.outputs.version) }}
-      - name: List contents of target/release
-        run: ls -la target/release
+          MORTENLJ_MISE_LIB_VERSION: ${{ fromJSON(needs.setup.outputs.version) }}
+          MORTENLJ_MISE_LIB_CLEAN_VERSION: ${{ fromJSON(needs.setup.outputs.clean-version) }}
       - name: Save artifacts for release
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
         with:
