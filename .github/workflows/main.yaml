@@ -30,6 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - setup
+    permissions:
+      packages: read
     strategy:
       matrix:
         task: ${{ fromJSON(needs.setup.outputs.ci-tasks) }}
@@ -49,6 +51,8 @@ jobs:
     needs:
       - setup
       - ci
+    permissions:
+      packages: read
     strategy:
       matrix:
         task: ${{ fromJSON(needs.setup.outputs.release-build-tasks) }}
