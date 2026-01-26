@@ -19,6 +19,8 @@ use crate::domeneshop::DomeneShop;
 mod dns_provider;
 mod domeneshop;
 
+const VERSION: Option<&str> = option_env!("MORTENLJ_MISE_LIB_VERSION");
+
 #[derive(Deserialize, Serialize, Debug)]
 struct DomainMap {
     cidr: Ipv4Cidr,
@@ -40,7 +42,9 @@ fn main() -> Result<()> {
         .extract()?;
 
     init_logging(&config.log_level)?;
+    let version = VERSION.unwrap_or("<unknown>");
     debug!("Logging initialized ...");
+    info!("Bootdns {}", version);
     debug!("Configuration: {:#?}", &config);
 
     let mut dns_provider = DomeneShop::new();
