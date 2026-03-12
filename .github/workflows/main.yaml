@@ -41,10 +41,7 @@ jobs:
           fetch-depth: 0
           submodules: "true"
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
-      - run: mise run docker:run-task ${{ matrix.task.cmd }}
-        env:
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: mise run ${{ matrix.task.cmd }}
 
   build:
     runs-on: ubuntu-latest
@@ -62,12 +59,10 @@ jobs:
           fetch-depth: 0
           submodules: "true"
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
-      - run: mise run docker:run-task release-build "${{ matrix.task.cmd }}"
+      - run: mise run release-build "${{ matrix.task.cmd }}"
         env:
           MORTENLJ_MISE_LIB_VERSION: ${{ fromJSON(needs.setup.outputs.version) }}
           MORTENLJ_MISE_LIB_CLEAN_VERSION: ${{ fromJSON(needs.setup.outputs.clean-version) }}
-          DOCKER_USERNAME: ${{ github.actor }}
-          DOCKER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Save artifacts for release
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
