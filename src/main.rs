@@ -44,7 +44,7 @@ fn main() -> Result<()> {
     init_logging(&config.log_level)?;
     let version = VERSION.unwrap_or("<unknown>");
     debug!("Logging initialized ...");
-    info!("Bootdns {}", version);
+    info!("Bootdns ({})", version);
     debug!("Configuration: {:#?}", &config);
 
     let mut dns_provider = DomeneShop::new();
