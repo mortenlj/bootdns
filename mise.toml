@@ -44,4 +44,6 @@ depends = [
 ]
 description = "Build the project in debug mode"
 sources = ["src/**/*.rs", "Cargo.lock", "Cargo.toml"]
-outputs = ["target/debug/bootdns"]
+outputs = [
+    "target/debug/bootdns.*.x86_64-unknown-linux-gnu",
+]
