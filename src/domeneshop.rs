@@ -231,9 +231,7 @@ fn load_netrc() -> Result<Credentials> {
 fn find_machine(netrc: &Netrc) -> Result<&Machine> {
     netrc
         .machines
-        .iter()
-        .filter(|machine| matches!(&machine.name, Some(name) if name == MACHINE_NAME))
-        .next_back()
+        .iter().rfind(|machine| matches!(&machine.name, Some(name) if name == MACHINE_NAME))
         .ok_or(anyhow!(
             "Unable to find credentials for {:?} in .netrc file",
             MACHINE_NAME
