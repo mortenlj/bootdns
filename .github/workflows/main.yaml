@@ -40,6 +40,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: "true"
+      - uses: mlugg/setup-zig@v2
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
       - run: mise run ${{ matrix.task.cmd }}
 
@@ -58,6 +59,7 @@ jobs:
         with:
           fetch-depth: 0
           submodules: "true"
+      - uses: mlugg/setup-zig@v2
       - uses: jdx/mise-action@d16887ba50704baed7de72bd1e82e04391e4457a # v3
       - run: mise run release-build "${{ matrix.task.cmd }}"
         env:
