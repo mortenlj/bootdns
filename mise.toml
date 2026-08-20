@@ -1,6 +1,6 @@
 [task_config]
 includes = [
-    ".config/mise-lib",
+    ".config/mise-lib/tasks",
     ".config/mise-lib/virtual_tasks.toml",
 ]
 
